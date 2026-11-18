@@ -1,11 +1,12 @@
 import "./globals.css"; import type { Metadata } from "next"; import Link from "next/link";
 import { Bricolage_Grotesque, Public_Sans } from "next/font/google"; import { getServerSession } from "next-auth";
-import { authOptions, isAdmin } from "@/lib/auth"; import CartCount from "@/components/CartCount"; import Assistant from "@/components/Assistant";
+import { getAuthOptions, isAdmin } from "@/lib/auth"; import CartCount from "@/components/CartCount"; import Assistant from "@/components/Assistant";
 const d = Bricolage_Grotesque({ subsets: ["latin"], variable: "--f-display" });
 const b = Public_Sans({ subsets: ["latin"], variable: "--f-body" });
 export const metadata: Metadata = { title: { default: "ZEE", template: "%s | ZEE" }, description: "Quality products, delivered across Nigeria." };
+export const dynamic = "force-dynamic";
 export default async function Root({ children }: { children: React.ReactNode }) {
- const s = await getServerSession(authOptions);
+ const s = await getServerSession(getAuthOptions());
  return (<html lang="en" className={`${d.variable} ${b.variable}`}><body>
   <header className="sticky top-0 z-10 border-b border-mist bg-wash/90 backdrop-blur"><nav className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
    <Link href="/" className="font-display text-2xl font-extrabold tracking-tight">ZEE</Link>

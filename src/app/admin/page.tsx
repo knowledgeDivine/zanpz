@@ -1,9 +1,9 @@
-import { redirect } from "next/navigation"; import { getServerSession } from "next-auth"; import { db } from "@/lib/db"; import { authOptions, isAdmin } from "@/lib/auth"; import { naira } from "@/lib/format"; import { createProduct, deleteProduct, setStatus } from "./actions";
+import { redirect } from "next/navigation"; import { getServerSession } from "next-auth"; import { db } from "@/lib/db"; import { getAuthOptions, isAdmin } from "@/lib/auth"; import { naira } from "@/lib/format"; import { createProduct, deleteProduct, setStatus } from "./actions";
 export const dynamic = "force-dynamic";
 export default async function Admin() {
- if (!isAdmin(await getServerSession(authOptions))) redirect("/login");
- const [rev, orders, customers, products, recent] = await Promise.all([db.order.aggregate({ _sum: { total: true }, where: { status: { not: "PENDING" } } }), db.order.count(), db.user.count({ where: { role: "CUSTOMER" } }), db.product.findMany({ orderBy: { createdAt: "desc" }, take: 20 }), db.order.findMany({ orderBy: { createdAt: "desc" }, take: 10 })]);
- const stats = [["Revenue", naira(rev._sum.total ?? 0)], ["Orders", orders], ["Customers", customers], ["Products", products.length]];
+ if (!isAdmin(await getServerSession(getAuthOptions()))) redirect("/login");
+ const [rev, orders, customers, products, recent] = await Promise.all([db.orm.public.Order.where((o) => o.status.neq("PENDING")).aggregate((a) => ({ total: a.sum("total") })), db.orm.public.Order.aggregate((a) => ({ total: a.count() })), db.orm.public.User.where({ role: "CUSTOMER" }).aggregate((a) => ({ total: a.count() })), db.orm.public.Product.orderBy((p) => p.createdAt.desc()).limit(20).all(), db.orm.public.Order.orderBy((o) => o.createdAt.desc()).limit(10).all()]);
+ const stats = [["Revenue", naira(rev.total ?? 0)], ["Orders", orders.total], ["Customers", customers.total], ["Products", products.length]];
  return (<div className="mx-auto max-w-6xl px-5 pt-10"><h1 className="font-display text-3xl font-bold">Dashboard</h1>
   <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">{stats.map(([k, v]) => <div key={k as string} className="rounded-md border border-mist bg-white p-4"><p className="text-sm text-ink/60">{k}</p><p className="font-display text-2xl font-bold">{v}</p></div>)}</div>
   <h2 className="mt-10 font-display text-xl font-bold">Add product</h2>

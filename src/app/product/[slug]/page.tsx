@@ -1,8 +1,9 @@
-import { notFound } from "next/navigation"; import { db } from "@/lib/db"; import { naira, salePrice } from "@/lib/format"; import ProductCard from "@/components/ProductCard"; import AddToCart from "@/components/AddToCart"; import WishlistButton from "@/components/WishlistButton"; import ReviewForm from "@/components/ReviewForm"; import { getServerSession } from "next-auth"; import { authOptions } from "@/lib/auth";
-export async function generateMetadata({ params }: any) { const p = await db.product.findUnique({ where: { slug: params.slug } }); return { title: p?.name ?? "Product", description: p?.description.slice(0, 150) }; }
+import { notFound } from "next/navigation"; import { db } from "@/lib/db"; import { naira, salePrice } from "@/lib/format"; import ProductCard from "@/components/ProductCard"; import AddToCart from "@/components/AddToCart"; import WishlistButton from "@/components/WishlistButton"; import ReviewForm from "@/components/ReviewForm"; import { getServerSession } from "next-auth"; import { getAuthOptions } from "@/lib/auth"; import { and } from "@prisma/orm-postgres/orm-client";
+export const dynamic = "force-dynamic";
+export async function generateMetadata({ params }: any) { const p = await db.orm.public.Product.where({ slug: params.slug }).first(); return { title: p?.name ?? "Product", description: p?.description.slice(0, 150) }; }
 export default async function Product({ params }: { params: { slug: string } }) {
- const p = await db.product.findUnique({ where: { slug: params.slug }, include: { reviews: true } }); if (!p) notFound();
- const uid = ((await getServerSession(authOptions))?.user as any)?.id; const saved = uid ? !!(await db.wishlistItem.findFirst({ where: { userId: uid, productId: p.id } })) : false; const related = await db.product.findMany({ where: { categoryId: p.categoryId, id: { not: p.id } }, take: 4 });
+ const p = await db.orm.public.Product.where({ slug: params.slug }).include("reviews").first(); if (!p) notFound();
+ const uid = ((await getServerSession(getAuthOptions()))?.user as any)?.id; const saved = uid ? !!(await db.orm.public.WishlistItem.where((w) => and(w.userId.eq(uid), w.productId.eq(p.id))).first()) : false; const related = await db.orm.public.Product.where((r) => and(r.categoryId.eq(p.categoryId), r.id.neq(p.id))).limit(4).all();
  const img = (p.images as string[])[0]; const avg = p.reviews.length ? (p.reviews.reduce((a, r) => a + r.rating, 0) / p.reviews.length).toFixed(1) : null;
  return (<div className="mx-auto grid max-w-6xl gap-10 px-5 pt-10 md:grid-cols-2">
   <img src={img} alt={p.name} className="aspect-[4/5] w-full rounded-md object-cover" />
