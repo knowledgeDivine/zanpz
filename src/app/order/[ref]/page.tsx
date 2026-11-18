@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation"; import { db } from "@/lib/db"; import { verifyPaystack } from "@/lib/pay"; import { naira } from "@/lib/format"; import ClearCart from "@/components/ClearCart";
 export const dynamic = "force-dynamic";
 export default async function OrderPage({ params }: { params: { ref: string } }) {
- let o = await db.order.findUnique({ where: { reference: params.ref }, include: { items: true } }); if (!o) notFound();
- if (o.status === "PENDING") { await verifyPaystack(o.reference); o = await db.order.findUnique({ where: { reference: params.ref }, include: { items: true } }); }
+ let o = await db.orm.public.Order.where({ reference: params.ref }).include("items").first(); if (!o) notFound();
+ if (o.status === "PENDING") { await verifyPaystack(o.reference); o = await db.orm.public.Order.where({ reference: params.ref }).include("items").first() ?? o; }
  const paid = o!.status !== "PENDING";
  return (<div className="mx-auto max-w-xl px-5 pt-16">{paid && <ClearCart />}
   <h1 className="font-display text-3xl font-bold">{paid ? "Payment confirmed" : "Payment not confirmed yet"}</h1>

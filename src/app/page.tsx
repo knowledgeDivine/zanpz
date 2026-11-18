@@ -1,7 +1,7 @@
 import Link from "next/link"; import { db } from "@/lib/db"; import ProductCard from "@/components/ProductCard";
 export const dynamic = "force-dynamic";
 export default async function Home() {
- const [featured, cats] = await Promise.all([db.product.findMany({ where: { featured: true }, take: 8, orderBy: { createdAt: "desc" } }), db.category.findMany()]);
+ const [featured, cats] = await Promise.all([db.orm.public.Product.where({ featured: true }).orderBy((p) => p.createdAt.desc()).limit(8).all(), db.orm.public.Category.all()]);
  return (<>
   <section className="mx-auto max-w-6xl overflow-hidden px-5 pt-16">
    <h1 className="rise font-display text-[34vw] font-extrabold leading-[0.8] tracking-tighter text-cobalt md:text-[22rem]">ZEE</h1>

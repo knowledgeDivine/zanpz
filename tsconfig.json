@@ -10,6 +10,7 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "strict": false,
+    "strictNullChecks": true,
     "noEmit": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -35,6 +36,7 @@
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "migrations"
   ]
 }
