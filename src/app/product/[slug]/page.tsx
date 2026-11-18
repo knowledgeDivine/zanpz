@@ -10,7 +10,7 @@ export default async function Product({ params }: { params: { slug: string } }) 
    <p className="mt-3 text-2xl">{p.discountPct > 0 && <s className="mr-3 text-ink/40">{naira(p.price)}</s>}{naira(salePrice(p))}</p>
    {avg && <p className="mt-2 text-sm">{avg} / 5 from {p.reviews.length} reviews</p>}
    <p className="mt-6 max-w-prose">{p.description}</p><p className="mt-4 text-sm">{p.stock > 0 ? `${p.stock} in stock` : "Out of stock"}</p>
-   <div className="mt-6 max-w-xs"><AddToCart p={{ id: p.id, slug: p.slug, name: p.name, price: salePrice(p), image: img, stock: p.stock }} /><WishlistButton productId={p.id} saved={saved} /></div>
+   <div className="mt-6 max-w-xs"><AddToCart p={{ id: p.id, slug: p.slug, name: p.name, price: salePrice(p), image: img, stock: p.stock }} /><WishlistButton productId={p.id} saved={saved} /></div></div>
   <div className="md:col-span-2"><h2 className="font-display text-xl font-bold">Reviews</h2>{p.reviews.length ? p.reviews.map((r) => <p key={r.id} className="mt-2 text-sm">{"★".repeat(r.rating)} {r.body}</p>) : <p className="mt-2 text-sm">No reviews yet.</p>}{uid && <ReviewForm productId={p.id} />}
    {related.length > 0 && <><h2 className="mt-12 font-display text-xl font-bold">You may also like</h2><div className="mt-4 grid grid-cols-2 gap-5 md:grid-cols-4">{related.map((r) => <ProductCard key={r.id} p={r} />)}</div></>}</div></div>);
 }
