@@ -1,0 +1,87 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "mysql"
+ url = env("DATABASE_URL") }
+enum Role { CUSTOMER ADMIN SUPER_ADMIN }
+enum OrderStatus { PENDING PAID SHIPPED DELIVERED CANCELLED }
+model User { id String @id @default(cuid())
+ email String @unique
+ name String?
+ password String
+ role Role @default(CUSTOMER)
+ createdAt DateTime @default(now())
+ orders Order[]
+ reviews Review[]
+ wishlist WishlistItem[]
+ addresses Address[] }
+model Category { id String @id @default(cuid())
+ name String
+ slug String @unique
+ products Product[] }
+model Product { id String @id @default(cuid())
+ slug String @unique
+ name String
+ description String @db.Text
+ price Int
+ discountPct Int @default(0)
+ stock Int @default(0)
+ images Json
+ featured Boolean @default(false)
+ categoryId String
+ category Category @relation(fields: [categoryId], references: [id])
+ createdAt DateTime @default(now())
+ items OrderItem[]
+ reviews Review[]
+ wishlist WishlistItem[]
+ @@index([categoryId]) }
+model Order { id String @id @default(cuid())
+ reference String @unique
+ userId String?
+ user User? @relation(fields: [userId], references: [id])
+ email String
+ name String
+ phone String
+ address String
+ city String
+ subtotal Int
+ discount Int @default(0)
+ shipping Int
+ total Int
+ status OrderStatus @default(PENDING)
+ paidAt DateTime?
+ createdAt DateTime @default(now())
+ items OrderItem[]
+ @@index([userId]) }
+model OrderItem { id String @id @default(cuid())
+ orderId String
+ order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+ productId String
+ product Product @relation(fields: [productId], references: [id])
+ name String
+ price Int
+ qty Int }
+model Coupon { id String @id @default(cuid())
+ code String @unique
+ percent Int
+ active Boolean @default(true)
+ expiresAt DateTime? }
+model Review { id String @id @default(cuid())
+ rating Int
+ body String @db.Text
+ userId String
+ user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ productId String
+ product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+ createdAt DateTime @default(now())
+ @@unique([userId, productId]) }
+model WishlistItem { id String @id @default(cuid())
+ userId String
+ user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ productId String
+ product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+ @@unique([userId, productId]) }
+model Address { id String @id @default(cuid())
+ userId String
+ user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ line String
+ city String
+ phone String }
